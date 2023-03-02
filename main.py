@@ -4,9 +4,11 @@ import mpv
 import anime4k
 
 sg.theme('BlueMono')
+icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 
 folder = sg.popup_get_folder(
-    'Выберите папку с медиа', title='Выбор папки', font='Consolas', history=True, size=(30, 40)).replace('/', os.sep)
+    'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
+    size=(30, 40)).replace('/', os.sep)
 
 
 def list_files():
@@ -22,7 +24,8 @@ def list_filenames():
 files = list_files()
 filenames_only = list_filenames()
 
-with open('txt/GLSL_Instructions_Advanced_ru.txt', 'r', encoding='utf-8') as file:
+with open(f'{os.path.dirname(__file__) + os.sep}txt{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
+          encoding='utf-8') as file:
     reference = file.read()
 
 filenum = 0
@@ -40,14 +43,14 @@ def extra():
     tab = []
     for quality in anime4k.qualities:
         tab += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
+    tab += [f'Ultra HQ', list(anime4k.presets.keys())[7:]]
     return tab
 
 
 menu = [
     ['Файл', ['Открыть URL-адрес', 'Открыть папку', 'Выход']],
-    ['Увеличение качества изображения', ['Отключить'] + list(anime4k.presets.keys())],
-    ['Другое', ['Справка', 'О программе']],
-    ['Расширенное увеличение качества изображения', ['Отключить'] + extra()]
+    ['Увеличение качества изображения', ['Отключить'] + extra()],
+    ['Другое', ['Справка', 'О программе']]
 ]
 
 col_files = [
@@ -91,7 +94,8 @@ layout = [
     ]
 ]
 
-window = sg.Window('Anime Player', layout, resizable=True, finalize=True, font='Consolas', size=(1140, 540))
+window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=True, font='Consolas',
+                   size=(1140, 540))
 
 window['-VID_OUT-'].expand(True, True)
 
@@ -166,7 +170,7 @@ while True:
     # ----------------- Верхнее меню -----------------
     if event == 'Открыть URL-адрес':
         link = sg.popup_get_text(
-            'Введите URL-адрес', title='Ввод ссылки', font='Consolas', size=(30, 40))
+            'Введите URL-адрес', title='Ввод ссылки', icon=icon, font='Consolas', size=(30, 40))
         if link != '' and link is not None:
             player.stop()
             window['-PLAY-'].update('ИГРАТЬ')
@@ -183,7 +187,8 @@ while True:
 
     elif event == 'Открыть папку':
         new_folder = sg.popup_get_folder(
-            'Выберите папку с медиа', title='Выбор папки', font='Consolas', history=True, size=(30, 40))
+            'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
+            size=(30, 40))
         if new_folder != '' and new_folder is not None:
             new_folder.replace('/', os.sep)
             player.stop()
@@ -208,9 +213,10 @@ while True:
         mode = event.split(' ')[1]
         player.glsl_shaders = anime4k.to_string(anime4k.create_preset(quality, mode))
     elif event == 'Справка':
-        sg.popup_scrolled(reference, size=(200, 0), title='Справка', font='Consolas')
+        sg.popup_scrolled(reference, size=(200, 0), title='Справка', icon=icon, font='Consolas')
     elif event == 'О программе':
-        sg.popup('Версия 0.1\nПрограмму создал Мазур Денис Олегович в 2023 году', title='О программе')
+        sg.popup('Версия 0.1\nПрограмму создал Мазур Денис Олегович в 2023 году', title='О программе',
+                 icon=icon)
 
     # Обновление имени файла
     window['-FILENAME-'].update(filename)

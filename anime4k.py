@@ -63,9 +63,9 @@ presets = {
         'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Restore_CNN_Soft_UL.glsl',
         'Anime4K_Upscale_CNN_x2_UL.glsl'
     ],
-    'Mode C+A (Died your PC)': [
+    'Mode C+A (Your PC will die)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Upscale_Denoise_CNN_x2_UL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl',
-        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_GAN_x4_UL.glsl',
+        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_GAN_x4_UUL.glsl',
         'Anime4K_Restore_CNN_Soft_UL.glsl'
     ]
 }
