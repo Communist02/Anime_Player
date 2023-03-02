@@ -6,9 +6,10 @@ import anime4k
 sg.theme('BlueMono')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 
-folder = sg.popup_get_folder(
-    'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
-    size=(30, 40)).replace('/', os.sep)
+
+# folder = sg.popup_get_folder(
+#     'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
+#     size=(30, 40)).replace('/', os.sep)
 
 
 def list_files():
@@ -21,14 +22,17 @@ def list_filenames():
             (f.lower().endswith('.m4a') or f.lower().endswith('.mp4') or f.lower().endswith('.mp3'))]
 
 
-files = list_files()
-filenames_only = list_filenames()
+# files = list_files()
+# filenames_only = list_filenames()
 
 with open(f'{os.path.dirname(__file__) + os.sep}txt{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
           encoding='utf-8') as file:
     reference = file.read()
 
-filenum = 0
+folder = ''
+files = []
+filenames_only = []
+filenum = -1
 if len(files) != 0:
     filename = files[0]
 else:
@@ -55,7 +59,7 @@ menu = [
 
 col_files = [
     [
-        sg.Text(f'Файл 1 из {len(files)}', size=(15, 1), key='-FILENUM-'),
+        sg.Text(f'Файл {filenum + 1} из {len(files)}', size=(15, 1), key='-FILENUM-'),
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
@@ -100,10 +104,8 @@ window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=T
 window['-VID_OUT-'].expand(True, True)
 
 player: mpv.MPV = mpv.MPV(wid=window['-VID_OUT-'].Widget.winfo_id(), input_default_bindings=True,
-                          input_vo_keyboard=True, osc=True)
-player.scale = 'ewa_lanczossharp'
-player.cscale = 'ewa_lanczossharp'
-player.dscale = 'ewa_lanczossharp'
+                          input_vo_keyboard=True, osc=True, scale='ewa_lanczossharp', cscale='ewa_lanczossharp',
+                          dscale='ewa_lanczossharp')
 
 while True:
     event, values = window.read(timeout=500)
@@ -143,19 +145,20 @@ while True:
             player.pause = False
             window['-PLAY-'].update('ПАУЗА')
     elif event == 'ПОЛН':
-        player.wid = -1
-        player.vo = 'null'
-        player.fullscreen = True
-        player.vo = ''
-        player.wait_for_property('fullscreen', lambda val: not val)
-        player.fullscreen = True
-        if player.pause and window['-PLAY-'] != 'ИГРАТЬ':
-            window['-PLAY-'].update('ИГРАТЬ')
-        elif not player.pause:
-            window['-PLAY-'].update('ПАУЗА')
-        player.wid = window['-VID_OUT-'].Widget.winfo_id()
-        player.vo = 'null'
-        player.vo = ''
+        if player.duration is not None:
+            player.wid = -1
+            player.vo = 'null'
+            player.fullscreen = True
+            player.vo = ''
+            player.wait_for_property('fullscreen', lambda val: not val)
+            player.fullscreen = True
+            if player.pause and window['-PLAY-'] != 'ИГРАТЬ':
+                window['-PLAY-'].update('ИГРАТЬ')
+            elif not player.pause:
+                window['-PLAY-'].update('ПАУЗА')
+            player.wid = window['-VID_OUT-'].Widget.winfo_id()
+            player.vo = 'null'
+            player.vo = ''
 
     elif event == 'Выход':
         break
@@ -191,7 +194,7 @@ while True:
             'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
             size=(30, 40))
         if new_folder != '' and new_folder is not None:
-            new_folder.replace('/', os.sep)
+            new_folder = new_folder.replace('/', os.sep)
             player.stop()
             window['-PLAY-'].update('ИГРАТЬ')
             folder = new_folder
