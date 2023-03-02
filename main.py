@@ -223,7 +223,7 @@ while True:
     # Обновление номера файла
     window['-FILENUM-'].update(f'Файл {filenum + 1} из {len(files)}')
     codec = player.video_format if player.video_format is not None else player.audio_codec_name
-    window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеря кадров: {player.frame_drop_count}')
+    window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
     if player.duration is not None and player.play:
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(player.time_pos), 60),
                                                                                    *divmod(int(player.duration), 60)))
