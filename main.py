@@ -101,7 +101,9 @@ window['-VID_OUT-'].expand(True, True)
 
 player: mpv.MPV = mpv.MPV(wid=window['-VID_OUT-'].Widget.winfo_id(), input_default_bindings=True,
                           input_vo_keyboard=True, osc=True)
-# player: mpv.MPV = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True, osc=True)
+player.scale = 'ewa_lanczossharp'
+player.cscale = 'ewa_lanczossharp'
+player.dscale = 'ewa_lanczossharp'
 
 while True:
     event, values = window.read(timeout=500)
@@ -177,7 +179,6 @@ while True:
             folder = link
             files = [link]
             filenames_only = []
-
             window['-FILELIST-'].update(values=files)
             player.play(link)
             player.pause = True
@@ -196,7 +197,6 @@ while True:
             folder = new_folder
             files = list_files()
             filenames_only = list_filenames()
-
             window['-FILELIST-'].update(values=filenames_only)
             window.refresh()
             filenum = 0
