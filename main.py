@@ -3,7 +3,7 @@ import PySimpleGUI as sg
 import mpv
 import anime4k
 
-sg.theme('BlueMono')
+sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 
 
@@ -66,7 +66,7 @@ col_files = [
         sg.Text(folder, key='-FOLDER-')
     ],
     [
-        sg.Listbox(values=filenames_only, size=(50, 30), key='-FILELIST-', enable_events=True)
+        sg.Listbox(values=filenames_only, size=(50, 1000), key='-FILELIST-', enable_events=True, horizontal_scroll=True)
     ]
 ]
 
@@ -80,11 +80,12 @@ col = [
     ],
     [
         sg.Text('00:00 / 00:00', key='-VIDEO_TIME-'),
-        sg.Button('ПРЕД', size=(8, 2)),
+        sg.Button('<<', size=(8, 2)),
         sg.Button('ИГРАТЬ', key='-PLAY-', size=(8, 2)),
-        sg.Button('СЛЕД', size=(8, 2)),
+        sg.Button('>>', size=(8, 2)),
         sg.Button('ПОЛН', size=(8, 2)),
-        sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(15, 30))
+        sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(15, 30),
+                  pad=((5, 5), (5, 10)))
     ],
 ]
 
@@ -118,22 +119,16 @@ while True:
         player.time_pos = values['-TIME-']
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(player.time_pos), 60),
                                                                                    *divmod(int(player.duration), 60)))
-    elif event in 'СЛЕД' and filenum < len(files) - 1:
-        player.stop()
-        window['-PLAY-'].update('ИГРАТЬ')
+    elif event in '>>' and filenum < len(files) - 1:
         filenum += 1
         filename = os.path.join(folder, filenames_only[filenum])
         window['-FILELIST-'].update(set_to_index=filenum, scroll_to_index=filenum)
         player.play(filename)
-        player.pause = True
-    elif event in 'ПРЕД' and filenum > 0:
-        player.stop()
-        window['-PLAY-'].update('ИГРАТЬ')
+    elif event in '<<' and filenum > 0:
         filenum -= 1
         filename = os.path.join(folder, filenames_only[filenum])
         window['-FILELIST-'].update(set_to_index=filenum, scroll_to_index=filenum)
         player.play(filename)
-        player.pause = True
     elif event == '-PLAY-':
         if filename != '':
             if player.duration is None:
@@ -167,12 +162,9 @@ while True:
         if len(filenames_only) != 0:
             filename_temp = os.path.join(folder, values['-FILELIST-'][0])
             if filename != filename_temp:
-                player.stop()
-                window['-PLAY-'].update('ИГРАТЬ')
                 filename = filename_temp
                 filenum = files.index(filename)
                 player.play(filename)
-                player.pause = True
     # ----------------- Верхнее меню -----------------
     if event == 'Открыть URL-адрес':
         link = sg.popup_get_text(
@@ -196,6 +188,7 @@ while True:
             size=(30, 40))
         if new_folder != '' and new_folder is not None:
             new_folder = new_folder.replace('/', os.sep)
+            player.pause = True
             player.stop()
             window['-PLAY-'].update('ИГРАТЬ')
             folder = new_folder
