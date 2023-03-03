@@ -5,6 +5,14 @@ presets = {
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_CNN_M.glsl', 'Anime4K_Upscale_CNN_x2_M.glsl',
         'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_S.glsl'
     ],
+    'Mode B (Fast)': [
+        'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_CNN_Soft_M.glsl', 'Anime4K_Upscale_CNN_x2_M.glsl',
+        'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_S.glsl'
+    ],
+    'Mode C (Fast)': [
+        'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Upscale_Denoise_CNN_x2_M.glsl', 'Anime4K_AutoDownscalePre_x2.glsl',
+        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_S.glsl'
+    ],
     'Mode A (HQ)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_CNN_VL.glsl', 'Anime4K_Upscale_CNN_x2_VL.glsl',
         'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_M.glsl'
@@ -32,9 +40,8 @@ presets = {
         'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_CNN_M.glsl', 'Anime4K_Upscale_CNN_x2_M.glsl'
     ],
     'Mode A (Ultra HQ)': [
-        'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_GAN_x4_UL.glsl',
-        'Anime4K_Restore_CNN_Soft_UL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl',
-        'Anime4K_Upscale_CNN_x2_UL.glsl'
+        'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl',
+        'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl'
     ],
     'Mode B (Ultra HQ)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_CNN_Soft_UL.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl',
@@ -46,8 +53,8 @@ presets = {
     ],
     'Mode A+A (Ultra HQ)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl',
-        'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Restore_CNN_Soft_UL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl',
-        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl'
+        'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl', 'Anime4K_AutoDownscalePre_x4.glsl',
+        'Anime4K_Upscale_CNN_x2_UL.glsl'
     ],
     'Mode B+B (Ultra HQ)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_CNN_Soft_UL.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl',
@@ -56,13 +63,16 @@ presets = {
     ],
     'Mode C+A (Ultra HQ)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Upscale_Denoise_CNN_x2_UL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl',
-        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Restore_CNN_Soft_UL.glsl',
-        'Anime4K_Upscale_CNN_x2_UL.glsl'
+        'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_CNN_x2_UL.glsl'
+    ],
+    'Mode A (Your PC will die)': [
+        'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_GAN_x4_UUL.glsl',
+        'Anime4K_Restore_CNN_Soft_M.glsl', 'Anime4K_Upscale_CNN_x2_M.glsl'
     ],
     'Mode C+A (Your PC will die)': [
         'Anime4K_Clamp_Highlights.glsl', 'Anime4K_Upscale_Denoise_CNN_x2_UL.glsl', 'Anime4K_AutoDownscalePre_x2.glsl',
         'Anime4K_AutoDownscalePre_x4.glsl', 'Anime4K_Restore_GAN_UUL.glsl', 'Anime4K_Upscale_GAN_x4_UUL.glsl',
-        'Anime4K_Restore_CNN_Soft_UL.glsl'
+        'Anime4K_Restore_CNN_Soft_M.glsl'
     ]
 }
 
@@ -114,12 +124,5 @@ def create_preset(quality, mode):
 def to_string(preset=None):
     if preset is None:
         preset = current_preset
-    string = ''
-    is_first = True
-    for shader in preset:
-        if not is_first:
-            string += ';'
-        else:
-            is_first = False
-        string += os.path.dirname(__file__) + os.sep + 'shaders' + os.sep + shader
-    return string
+    preset = [os.path.dirname(__file__) + os.sep + 'shaders' + os.sep + shader for shader in preset]
+    return ';'.join(preset)

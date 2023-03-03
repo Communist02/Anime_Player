@@ -7,11 +7,6 @@ sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 
 
-# folder = sg.popup_get_folder(
-#     'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
-#     size=(30, 40)).replace('/', os.sep)
-
-
 def list_files():
     return [os.path.join(folder, f) for f in os.listdir(
         folder) if (f.lower().endswith('.m4a') or f.lower().endswith('.mp4') or f.lower().endswith('.mp3'))]
@@ -22,21 +17,15 @@ def list_filenames():
             (f.lower().endswith('.m4a') or f.lower().endswith('.mp4') or f.lower().endswith('.mp3'))]
 
 
-# files = list_files()
-# filenames_only = list_filenames()
-
 with open(f'{os.path.dirname(__file__) + os.sep}txt{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
           encoding='utf-8') as file:
     reference = file.read()
 
 folder = ''
+filename = ''
 files = []
 filenames_only = []
 filenum = -1
-if len(files) != 0:
-    filename = files[0]
-else:
-    filename = ''
 
 modes = []
 for quality in anime4k.qualities:
@@ -47,7 +36,7 @@ def menu_shaders():
     tab = []
     for quality in anime4k.qualities:
         tab += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
-    tab += [f'Ultra HQ', list(anime4k.presets.keys())[7:]]
+    tab += [f'Качество UHQ', list(anime4k.presets.keys())[9:]]
     return tab
 
 
@@ -155,7 +144,6 @@ while True:
             player.wid = window['-VID_OUT-'].Widget.winfo_id()
             player.vo = 'null'
             player.vo = ''
-
     elif event == 'Выход':
         break
     elif event == '-FILELIST-':
@@ -181,7 +169,6 @@ while True:
             window.refresh()
             filenum = 0
             filename = link
-
     elif event == 'Открыть папку':
         new_folder = sg.popup_get_folder(
             'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
@@ -201,7 +188,7 @@ while True:
                 filename = files[0]
             else:
                 filename = ''
-    if event == 'Отключить':
+    elif event == 'Отключить':
         player.glsl_shaders = ''
     elif event in anime4k.presets.keys():
         player.glsl_shaders = anime4k.to_string(anime4k.presets[event])
@@ -223,10 +210,13 @@ while True:
     window['-FOLDER-'].update(folder)
     # Обновление номера файла
     window['-FILENUM-'].update(f'Файл {filenum + 1} из {len(files)}')
+    # Обновление информации о кодеке и потерянных файлах
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
+    # Обновление кнопки ИГРАТЬ
     if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
         window['-PLAY-'].update('ИГРАТЬ')
-    if duration is not None:
+    # Обновление ползунка прокрутки и времени
+    if duration is not None and time_pos is not None:
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(time_pos), 60),
                                                                                    *divmod(int(duration), 60)))
         window['-TIME-'].update(range=(0, duration), value=time_pos)
