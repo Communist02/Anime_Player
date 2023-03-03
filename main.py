@@ -43,7 +43,7 @@ for quality in anime4k.qualities:
     modes += [f'Mode {mode} ({quality})' for mode in anime4k.modes]
 
 
-def extra():
+def menu_shaders():
     tab = []
     for quality in anime4k.qualities:
         tab += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
@@ -53,7 +53,7 @@ def extra():
 
 menu = [
     ['Файл', ['Открыть URL-адрес', 'Открыть папку', 'Выход']],
-    ['Увеличение качества изображения', ['Отключить'] + extra()],
+    ['Увеличение качества изображения', ['Отключить'] + menu_shaders()],
     ['Другое', ['Справка', 'О программе']]
 ]
 
@@ -63,14 +63,14 @@ col_files = [
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
+        sg.Text(folder, key='-FOLDER-')
+    ],
+    [
         sg.Listbox(values=filenames_only, size=(50, 30), key='-FILELIST-', enable_events=True)
     ]
 ]
 
 col = [
-    [
-        sg.Text(filename, key='-FILENAME-')
-    ],
     [
         sg.Image('', key='-VID_OUT-')
     ],
@@ -105,7 +105,7 @@ window['-VID_OUT-'].expand(True, True)
 
 player: mpv.MPV = mpv.MPV(wid=window['-VID_OUT-'].Widget.winfo_id(), input_default_bindings=True,
                           input_vo_keyboard=True, osc=True, scale='ewa_lanczossharp', cscale='ewa_lanczossharp',
-                          dscale='ewa_lanczossharp')
+                          dscale='ewa_lanczossharp', keep_open=True)
 
 while True:
     event, values = window.read(timeout=500)
@@ -179,7 +179,7 @@ while True:
         if link != '' and link is not None:
             player.stop()
             window['-PLAY-'].update('ИГРАТЬ')
-            folder = link
+            folder = 'Ссылка'
             files = [link]
             filenames_only = []
             window['-FILELIST-'].update(values=files)
@@ -221,16 +221,25 @@ while True:
         sg.popup('Версия 0.1\nПрограмму создал Мазур Денис Олегович в 2023 году', title='О программе',
                  icon=icon)
 
+    duration = player.duration
+    time_pos = player.time_pos
+    codec = player.video_format if player.video_format is not None else player.audio_codec_name
+
     # Обновление имени файла
-    window['-FILENAME-'].update(filename)
+    window['-FOLDER-'].update(folder)
     # Обновление номера файла
     window['-FILENUM-'].update(f'Файл {filenum + 1} из {len(files)}')
-    codec = player.video_format if player.video_format is not None else player.audio_codec_name
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
-    if player.duration is not None and player.play:
-        window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(player.time_pos), 60),
-                                                                                   *divmod(int(player.duration), 60)))
-        window['-TIME-'].update(range=(0, player.duration), value=player.time_pos)
+    if duration is not None and player.pause:
+        window['-PLAY-'].update('ИГРАТЬ')
+    elif filename != '' and duration is None and player.play:
+        player.pause = True
+        window['-PLAY-'].update('ИГРАТЬ')
+        player.play(filename)
+    elif duration is not None and player.play:
+        window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(time_pos), 60),
+                                                                                   *divmod(int(duration), 60)))
+        window['-TIME-'].update(range=(0, duration), value=time_pos)
     else:
         window['-TIME-'].update(range=(0, 0), value=0)
         window['-VIDEO_TIME-'].update(value='00:00 / 00:00')
