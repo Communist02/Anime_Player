@@ -135,15 +135,16 @@ while True:
         player.play(filename)
         player.pause = True
     elif event == '-PLAY-':
-        if player.duration == 0:
-            player.play(filename)
-            window['-PLAY-'].update('ПАУЗА')
-        elif not player.pause:
-            player.pause = True
-            window['-PLAY-'].update('ИГРАТЬ')
-        else:
-            player.pause = False
-            window['-PLAY-'].update('ПАУЗА')
+        if filename != '':
+            if player.duration is None:
+                player.play(filename)
+                window['-PLAY-'].update('ПАУЗА')
+            elif not player.pause:
+                player.pause = True
+                window['-PLAY-'].update('ИГРАТЬ')
+            else:
+                player.pause = False
+                window['-PLAY-'].update('ПАУЗА')
     elif event == 'ПОЛН':
         if player.duration is not None:
             player.wid = -1
@@ -230,13 +231,9 @@ while True:
     # Обновление номера файла
     window['-FILENUM-'].update(f'Файл {filenum + 1} из {len(files)}')
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
-    if duration is not None and player.pause:
+    if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
         window['-PLAY-'].update('ИГРАТЬ')
-    elif filename != '' and duration is None and player.play:
-        player.pause = True
-        window['-PLAY-'].update('ИГРАТЬ')
-        player.play(filename)
-    elif duration is not None and player.play:
+    if duration is not None:
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(time_pos), 60),
                                                                                    *divmod(int(duration), 60)))
         window['-TIME-'].update(range=(0, duration), value=time_pos)
