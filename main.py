@@ -73,6 +73,7 @@ col = [
         sg.Button('ИГРАТЬ', key='-PLAY-', size=(8, 2)),
         sg.Button('>>', size=(8, 2)),
         sg.Button('ПОЛН', size=(8, 2)),
+        sg.Button('МЕНЮ', size=(8, 2)),
         sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(15, 30),
                   pad=((5, 5), (5, 10)))
     ],
@@ -83,8 +84,8 @@ layout = [
         sg.Menu(menu)
     ],
     [
-        sg.Col(col_files, vertical_alignment='top'),
-        sg.Col(col, expand_y=True, expand_x=True)
+        sg.Col(col, expand_x=True, expand_y=True),
+        sg.Col(col_files, key='-LIST-', visible=False)
     ]
 ]
 
@@ -144,6 +145,11 @@ while True:
             player.wid = window['-VID_OUT-'].Widget.winfo_id()
             player.vo = 'null'
             player.vo = ''
+    elif event == 'МЕНЮ':
+        if not window['-LIST-'].visible:
+            window['-LIST-'].update(visible=True)
+        else:
+            window['-LIST-'].update(visible=False)
     elif event == 'Выход':
         break
     elif event == '-FILELIST-':
@@ -163,12 +169,13 @@ while True:
             folder = 'Ссылка'
             files = [link]
             filenames_only = []
+            filenum = 0
+            filename = link
             window['-FILELIST-'].update(values=files)
+            window['-LIST-'].update(visible=False)
             player.play(link)
             player.pause = True
             window.refresh()
-            filenum = 0
-            filename = link
     elif event == 'Открыть папку':
         new_folder = sg.popup_get_folder(
             'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
@@ -181,13 +188,14 @@ while True:
             folder = new_folder
             files = list_files()
             filenames_only = list_filenames()
-            window['-FILELIST-'].update(values=filenames_only)
-            window.refresh()
             filenum = 0
             if len(files) != 0:
                 filename = files[0]
             else:
                 filename = ''
+            window['-FILELIST-'].update(values=filenames_only)
+            window['-LIST-'].update(visible=True)
+            window.refresh()
     elif event == 'Отключить':
         player.glsl_shaders = ''
     elif event in anime4k.presets.keys():
