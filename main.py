@@ -26,23 +26,18 @@ filename = ''
 files = []
 filenames_only = []
 filenum = -1
-
 modes = []
+tabs = []
+
 for quality in anime4k.qualities:
     modes += [f'Mode {mode} ({quality})' for mode in anime4k.modes]
-
-
-def menu_shaders():
-    tab = []
-    for quality in anime4k.qualities:
-        tab += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
-    tab += [f'Качество UHQ', list(anime4k.presets.keys())[9:]]
-    return tab
-
+for quality in anime4k.qualities:
+    tabs += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
+tabs += [f'Качество UHQ', list(anime4k.presets.keys())[9:]]
 
 menu = [
     ['Файл', ['Открыть URL-адрес', 'Открыть папку', 'Выход']],
-    ['Увеличение качества изображения', ['Отключить'] + menu_shaders()],
+    ['Увеличение качества изображения', ['Отключить'] + tabs],
     ['Другое', ['Справка', 'О программе']]
 ]
 
