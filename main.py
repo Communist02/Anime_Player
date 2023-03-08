@@ -2,19 +2,19 @@ import os
 import PySimpleGUI as sg
 import mpv
 import anime4k
+from localization import strings as loc
 
 sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
+formats = ('mp4', 'mp4a', 'mp3', 'mkv', 'flac', 'ogg', 'aac', 'opus', 'wav', 'avi', 'mov', 'webm', 'wmv', '3gp')
 
 
 def list_files():
-    return [os.path.join(folder, f) for f in os.listdir(
-        folder) if (f.lower().endswith('.m4a') or f.lower().endswith('.mp4') or f.lower().endswith('.mp3'))]
+    return [os.path.join(folder, f) for f in os.listdir(folder) if (f.split('.')[-1].lower() in formats)]
 
 
 def list_filenames():
-    return [f for f in os.listdir(folder) if
-            (f.lower().endswith('.m4a') or f.lower().endswith('.mp4') or f.lower().endswith('.mp3'))]
+    return [f for f in os.listdir(folder) if (f.split('.')[-1].lower() in formats)]
 
 
 with open(f'{os.path.dirname(__file__) + os.sep}txt{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
@@ -30,20 +30,20 @@ modes = []
 tabs = []
 
 for quality in anime4k.qualities:
-    modes += [f'Mode {mode} ({quality})' for mode in anime4k.modes]
+    modes += [f'{loc["Mode"]} {mode} ({quality})' for mode in anime4k.modes]
 for quality in anime4k.qualities:
-    tabs += [f'Качество {quality}', [f'Mode {mode} ({quality})' for mode in anime4k.modes]]
-tabs += [f'Качество UHQ', list(anime4k.presets.keys())[9:]]
+    tabs += [f'{loc["Quality"]} {quality}', [f'{loc["Mode"]} {mode} ({quality})' for mode in anime4k.modes]]
+tabs += [f'{loc["Quality"]} UHQ', [f'{loc["Mode"]} {mode}' for mode in list(anime4k.presets.keys())[9:]]]
 
 menu = [
-    ['Файл', ['Открыть URL-адрес', 'Открыть папку', 'Выход']],
-    ['Увеличение качества изображения', ['Отключить'] + tabs],
-    ['Другое', ['Справка', 'О программе']]
+    [loc['File'], [loc['Open URL'], loc['Open folder'], loc['Exit']]],
+    [loc['Increasing image quality'], [loc['Disable']] + tabs],
+    [loc['Other'], [loc['Reference'], loc['About']]]
 ]
 
 col_files = [
     [
-        sg.Text(f'Файл {filenum + 1} из {len(files)}', size=(15, 1), key='-FILENUM-'),
+        sg.Text(f'{loc["File"]} {filenum + 1} из {len(files)}', size=(15, 1), key='-FILENUM-'),
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
@@ -67,8 +67,8 @@ col = [
         sg.Button('<<', size=(8, 2)),
         sg.Button('ИГРАТЬ', key='-PLAY-', size=(8, 2)),
         sg.Button('>>', size=(8, 2)),
-        sg.Button('ПОЛН', size=(8, 2)),
-        sg.Button('МЕНЮ', size=(8, 2)),
+        sg.Button('ПОЛН', key='-FS-', size=(8, 2)),
+        sg.Button('МЕНЮ', key='-MENU-', size=(8, 2)),
         sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(15, 30),
                   pad=((5, 5), (5, 10)))
     ],
@@ -125,7 +125,7 @@ while True:
             else:
                 player.pause = False
                 window['-PLAY-'].update('ПАУЗА')
-    elif event == 'ПОЛН':
+    elif event == '-FS-':
         if player.duration is not None:
             player.wid = -1
             player.vo = 'null'
@@ -140,12 +140,12 @@ while True:
             player.wid = window['-VID_OUT-'].Widget.winfo_id()
             player.vo = 'null'
             player.vo = ''
-    elif event == 'МЕНЮ':
+    elif event == '-MENU-':
         if not window['-LIST-'].visible:
             window['-LIST-'].update(visible=True)
         else:
             window['-LIST-'].update(visible=False)
-    elif event == 'Выход':
+    elif event == loc['Exit']:
         break
     elif event == '-FILELIST-':
         if len(filenames_only) != 0:
@@ -155,7 +155,7 @@ while True:
                 filenum = files.index(filename)
                 player.play(filename)
     # ----------------- Верхнее меню -----------------
-    if event == 'Открыть URL-адрес':
+    if event == loc['Open URL']:
         link = sg.popup_get_text(
             'Введите URL-адрес', title='Ввод ссылки', icon=icon, font='Consolas', size=(30, 40))
         if link != '' and link is not None:
@@ -171,7 +171,7 @@ while True:
             player.play(link)
             player.pause = True
             window.refresh()
-    elif event == 'Открыть папку':
+    elif event == loc['Open folder']:
         new_folder = sg.popup_get_folder(
             'Выберите папку с медиа', title='Выбор папки', icon=icon, font='Consolas', history=True,
             size=(30, 40))
@@ -191,17 +191,17 @@ while True:
             window['-FILELIST-'].update(values=filenames_only)
             window['-LIST-'].update(visible=True)
             window.refresh()
-    elif event == 'Отключить':
+    elif event == loc['Disable']:
         player.glsl_shaders = ''
-    elif event in anime4k.presets.keys():
-        player.glsl_shaders = anime4k.to_string(anime4k.presets[event])
+    elif event in [f'{loc["Mode"]} {mode}' for mode in anime4k.presets.keys()]:
+        player.glsl_shaders = anime4k.to_string(anime4k.presets[event.split(' ', 1)[-1]])
     elif event in modes:
         quality = event.replace(')', '').split('(')[1]
         mode = event.split(' ')[1]
         player.glsl_shaders = anime4k.to_string(anime4k.create_preset(quality, mode))
-    elif event == 'Справка':
+    elif event == loc['Reference']:
         sg.popup_scrolled(reference, size=(200, 0), title='Справка', icon=icon, font='Consolas')
-    elif event == 'О программе':
+    elif event == loc['About']:
         sg.popup('Версия 0.1\nПрограмму создал Мазур Денис Олегович в 2023 году', title='О программе',
                  icon=icon)
 
@@ -212,7 +212,7 @@ while True:
     # Обновление имени файла
     window['-FOLDER-'].update(folder)
     # Обновление номера файла
-    window['-FILENUM-'].update(f'Файл {filenum + 1} из {len(files)}')
+    window['-FILENUM-'].update(f'{loc["File"]} {filenum + 1} из {len(files)}')
     # Обновление информации о кодеке и потерянных файлах
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
     # Обновление кнопки ИГРАТЬ
