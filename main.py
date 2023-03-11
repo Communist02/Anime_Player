@@ -18,10 +18,6 @@ def list_filenames():
     return [f for f in os.listdir(folder) if (f.split('.')[-1].lower() in formats)]
 
 
-with open(f'{os.path.dirname(__file__) + os.sep}txt{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
-          encoding='utf-8') as file:
-    reference = file.read()
-
 folder = ''
 filename = ''
 files = []
@@ -39,7 +35,7 @@ tabs += [f'{loc["Quality"]} UHQ', [f'{loc["Mode"]} {mode}' for mode in list(anim
 menu = [
     [loc['File'], [loc['Open URL'], loc['Open folder'], loc['Exit']]],
     [loc['Increasing image quality'], [loc['Disable']] + tabs],
-    [loc['Other'], [loc['Reference'], loc['About']]]
+    [loc['Other'], [loc['Reference'], 'SVP', loc['About']]]
 ]
 
 col_files = [
@@ -48,7 +44,8 @@ col_files = [
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
-        sg.Text(folder, key='-FOLDER-')
+        sg.Text(folder, key='-FOLDER-'),
+        sg.Text('', key='-FPS-')
     ],
     [
         sg.Listbox(values=filenames_only, size=(50, 1000), key='-FILELIST-', enable_events=True, horizontal_scroll=True)
@@ -105,6 +102,8 @@ while True:
         player.time_pos = values['-TIME-']
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(player.time_pos), 60),
                                                                                    *divmod(int(player.duration), 60)))
+        if player.pause and window['-PLAY-'] != 'ИГРАТЬ':
+            window['-PLAY-'].update('ИГРАТЬ')
     elif event in '>>' and filenum < len(files) - 1:
         filenum += 1
         filename = os.path.join(folder, filenames_only[filenum])
@@ -119,6 +118,7 @@ while True:
         if filename != '':
             if player.duration is None:
                 player.play(filename)
+                player.pause = False
                 window['-PLAY-'].update('ПАУЗА')
             elif not player.pause:
                 player.pause = True
@@ -137,7 +137,7 @@ while True:
             player.fullscreen = True
             if player.pause and window['-PLAY-'] != 'ИГРАТЬ':
                 window['-PLAY-'].update('ИГРАТЬ')
-            elif not player.pause:
+            elif not player.pause and window['-PLAY-'] != 'ПАУЗА':
                 window['-PLAY-'].update('ПАУЗА')
             player.wid = window['-VID_OUT-'].Widget.winfo_id()
             player.vo = 'null'
@@ -147,6 +147,12 @@ while True:
             window['-LIST-'].update(visible=True)
         else:
             window['-LIST-'].update(visible=False)
+    elif event == 'SVP':
+        if player.input_ipc_server != 'mpvpipe':
+            player.input_ipc_server = 'mpvpipe'
+            player.hwdec = 'auto-copy'
+            player.hwdec_codecs = 'all'
+            player.hr_seek_framedrop = False
     elif event == loc['Exit']:
         break
     elif event == '-FILELIST-':
@@ -162,6 +168,7 @@ while True:
             'Введите URL-адрес', title='Ввод ссылки', icon=icon, font='Consolas', size=(30, 40))
         if link != '' and link is not None:
             player.stop()
+            player.pause = True
             window['-PLAY-'].update('ИГРАТЬ')
             folder = 'Ссылка'
             files = [link]
@@ -171,7 +178,6 @@ while True:
             window['-FILELIST-'].update(values=files)
             window['-LIST-'].update(visible=False)
             player.play(link)
-            player.pause = True
             window.refresh()
     elif event == loc['Open folder']:
         new_folder = sg.popup_get_folder(
@@ -202,6 +208,9 @@ while True:
         mode = event.split(' ')[1]
         player.glsl_shaders = anime4k.to_string(anime4k.create_preset(quality, mode))
     elif event == loc['Reference']:
+        with open(f'{os.path.dirname(__file__) + os.sep}doc{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
+                  encoding='utf-8') as file:
+            reference = file.read()
         sg.popup_scrolled(reference, size=(200, 0), title='Справка', icon=icon, font='Consolas')
     elif event == loc['About']:
         sg.popup(f'Anime Player v{version}\n\n{loc["About program"]}\n\nCopyright © 2023 MazurDev', title=loc['About'],
@@ -210,6 +219,7 @@ while True:
     duration = player.duration
     time_pos = player.time_pos
     codec = player.video_format if player.video_format is not None else player.audio_codec_name
+    fps = round(player.estimated_vf_fps, 1) if player.estimated_vf_fps is not None else player.estimated_vf_fps
 
     # Обновление имени файла
     window['-FOLDER-'].update(folder)
@@ -217,9 +227,7 @@ while True:
     window['-FILENUM-'].update(f'{loc["File"]} {filenum + 1} из {len(files)}')
     # Обновление информации о кодеке и потерянных файлах
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
-    # Обновление кнопки ИГРАТЬ
-    if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
-        window['-PLAY-'].update('ИГРАТЬ')
+    window['-FPS-'].update(f'FPS: {fps}')
     # Обновление ползунка прокрутки и времени
     if duration is not None and time_pos is not None:
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(time_pos), 60),
