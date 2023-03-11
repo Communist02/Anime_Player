@@ -102,8 +102,6 @@ while True:
         player.time_pos = values['-TIME-']
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(player.time_pos), 60),
                                                                                    *divmod(int(player.duration), 60)))
-        if player.pause and window['-PLAY-'] != 'ИГРАТЬ':
-            window['-PLAY-'].update('ИГРАТЬ')
     elif event in '>>' and filenum < len(files) - 1:
         filenum += 1
         filename = os.path.join(folder, filenames_only[filenum])
@@ -227,6 +225,9 @@ while True:
     window['-FILENUM-'].update(f'{loc["File"]} {filenum + 1} из {len(files)}')
     # Обновление информации о кодеке и потерянных файлах
     window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
+    # Обновление кнопки ИГРАТЬ
+    if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
+        window['-PLAY-'].update('ИГРАТЬ')
     window['-FPS-'].update(f'FPS: {fps}')
     # Обновление ползунка прокрутки и времени
     if duration is not None and time_pos is not None:
