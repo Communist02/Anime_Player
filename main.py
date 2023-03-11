@@ -7,6 +7,7 @@ from localization import strings as loc
 sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 formats = ('mp4', 'mp4a', 'mp3', 'mkv', 'flac', 'ogg', 'aac', 'opus', 'wav', 'avi', 'mov', 'webm', 'wmv', '3gp')
+version = '0.1.5 Alpha'
 
 
 def list_files():
@@ -126,6 +127,7 @@ while True:
                 player.pause = False
                 window['-PLAY-'].update('ПАУЗА')
     elif event == '-FS-':
+        # Нужно понять как отличить аудио от видео
         if player.duration is not None:
             player.wid = -1
             player.vo = 'null'
@@ -202,7 +204,7 @@ while True:
     elif event == loc['Reference']:
         sg.popup_scrolled(reference, size=(200, 0), title='Справка', icon=icon, font='Consolas')
     elif event == loc['About']:
-        sg.popup('Версия 0.1\nПрограмму создал Мазур Денис Олегович в 2023 году', title='О программе',
+        sg.popup(f'Anime Player v{version}\n\n{loc["About program"]}\n\nCopyright © 2023 MazurDev', title=loc['About'],
                  icon=icon)
 
     duration = player.duration

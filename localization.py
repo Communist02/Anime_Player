@@ -11,7 +11,8 @@ en = {
     'Reference': 'Reference',
     'About': 'About',
     'Quality': 'Quality',
-    'Mode': 'Mode'
+    'Mode': 'Mode',
+    'About program': 'Media player written in Python programming language using PySimpleGUI library for graphical user interface, mpv media player and Anime4K scaling algorithm',
 }
 
 ru = {
@@ -25,7 +26,8 @@ ru = {
     'Reference': 'Справка',
     'About': 'О программе',
     'Quality': 'Качество',
-    'Mode': 'Режим'
+    'Mode': 'Режим',
+    'About program': 'Медиаплеер, написанный на языке программирования Python с использованием библиотеки графического пользовательского интерфейса PySimpleGUI, мультимедийного проигрывателя mpv и алгоритма масштабирования Anime4K',
 }
 
 match locale.getlocale()[0]:
