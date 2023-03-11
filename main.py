@@ -151,6 +151,8 @@ while True:
             player.hwdec = 'auto-copy'
             player.hwdec_codecs = 'all'
             player.hr_seek_framedrop = False
+            print(player.vo)
+            player.vo = 'gpu-next'
     elif event == loc['Exit']:
         break
     elif event == '-FILELIST-':
