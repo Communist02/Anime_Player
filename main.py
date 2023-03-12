@@ -7,7 +7,7 @@ from localization import strings as loc
 sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
 formats = ('mp4', 'mp4a', 'mp3', 'mkv', 'flac', 'ogg', 'aac', 'opus', 'wav', 'avi', 'mov', 'webm', 'wmv', '3gp')
-version = '0.1.5 Alpha'
+version = '0.1.6 Alpha'
 
 
 def list_files():
@@ -35,7 +35,7 @@ tabs += [f'{loc["Quality"]} UHQ', [f'{loc["Mode"]} {mode}' for mode in list(anim
 menu = [
     [loc['File'], [loc['Open URL'], loc['Open folder'], loc['Exit']]],
     [loc['Increasing image quality'], [loc['Disable']] + tabs],
-    [loc['Other'], [loc['Reference'], 'SVP', loc['About']]]
+    [loc['Other'], [loc['Reference'], loc['Activate SVP'], loc['Create config for Android'], loc['About']]]
 ]
 
 col_files = [
@@ -44,8 +44,8 @@ col_files = [
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
-        sg.Text(folder, key='-FOLDER-'),
-        sg.Text('', key='-FPS-')
+        sg.Text('', key='-FPS-'),
+        sg.Text(folder, key='-FOLDER-')
     ],
     [
         sg.Listbox(values=filenames_only, size=(50, 1000), key='-FILELIST-', enable_events=True, horizontal_scroll=True)
@@ -62,13 +62,14 @@ col = [
     ],
     [
         sg.Text('00:00 / 00:00', key='-VIDEO_TIME-'),
-        sg.Button('<<', size=(8, 2)),
-        sg.Button('ИГРАТЬ', key='-PLAY-', size=(8, 2)),
-        sg.Button('>>', size=(8, 2)),
-        sg.Button('ПОЛН', key='-FS-', size=(8, 2)),
-        sg.Button('МЕНЮ', key='-MENU-', size=(8, 2)),
-        sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(15, 30),
-                  pad=((5, 5), (5, 10)))
+        sg.Button('<<', size=(5, 1)),
+        sg.Button('ИГРАТЬ', key='-PLAY-', size=(8, 1)),
+        sg.Button('>>', size=(5, 1)),
+        sg.Image(expand_x=True, pad=(0, 0)),
+        sg.Button('ПОЛН', key='-FS-', size=(8, 1)),
+        sg.Button('МЕНЮ', key='-MENU-', size=(8, 1)),
+        sg.Slider(orientation='h', key='-VOLUME-', default_value=100, enable_events=True, range=(0, 100), size=(12, 16),
+                  pad=((5, 5), (0, 8)))
     ],
 ]
 
@@ -83,7 +84,7 @@ layout = [
 ]
 
 window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=True, font='Consolas',
-                   size=(1140, 540))
+                   size=(980, 540))
 
 window['-VID_OUT-'].expand(True, True)
 
@@ -145,14 +146,12 @@ while True:
             window['-LIST-'].update(visible=True)
         else:
             window['-LIST-'].update(visible=False)
-    elif event == 'SVP':
+    elif event == loc['Activate SVP']:
         if player.input_ipc_server != 'mpvpipe':
             player.input_ipc_server = 'mpvpipe'
             player.hwdec = 'auto-copy'
             player.hwdec_codecs = 'all'
             player.hr_seek_framedrop = False
-            print(player.vo)
-            player.vo = 'gpu-next'
     elif event == loc['Exit']:
         break
     elif event == '-FILELIST-':
@@ -211,7 +210,38 @@ while True:
         with open(f'{os.path.dirname(__file__) + os.sep}doc{os.sep}GLSL_Instructions_Advanced_ru.txt', 'r',
                   encoding='utf-8') as file:
             reference = file.read()
-        sg.popup_scrolled(reference, size=(200, 0), title='Справка', icon=icon, font='Consolas')
+        sg.popup_scrolled(reference, size=(200, 0), title=loc['Reference'], icon=icon, font='Consolas')
+    elif event == loc['Create config for Android']:
+        config_layout = [
+            [sg.Text(
+                'Этот конфиг вы можете использовать в приложении MPV на андроид, чтобы для видео в нем применялся алгоритм Anime4K')],
+            [sg.Text('Введите путь до шейдеров')],
+            [sg.Input('/storage/emulated/0/mpv/shaders/')],
+            [sg.Text('Выберите конфигурацию')],
+            [sg.Combo(modes, readonly=True)],
+            [sg.OK(size=(6, 1)), sg.Button('Все', size=(6, 1))]
+        ]
+        config_windows = sg.Window(loc['Create config for Android'], config_layout, icon=icon, resizable=True,
+                                   size=(500, 180))
+        while True:
+            event, values = config_windows.read()
+            if event == sg.WINDOW_CLOSED:
+                break
+            elif event == 'OK' and values[1] != '':
+                quality = values[1].replace(')', '').split('(')[1]
+                mode = values[1].split(' ')[1]
+                sg.popup_scrolled(
+                    f'# {values[1]}\n' + anime4k.android_config(anime4k.create_preset(quality, mode), values[0]),
+                    title=values[1], icon=icon)
+            elif event == 'Все':
+                mods = []
+                for mod in modes:
+                    quality = mod.replace(')', '').split('(')[1]
+                    mode = mod.split(' ')[1]
+                    mods.append(
+                        f'# {mod}\n' + '# ' + anime4k.android_config(anime4k.create_preset(quality, mode), values[0]))
+                sg.popup_scrolled('\n\n'.join(mods), title='Все', icon=icon)
+        config_windows.close()
     elif event == loc['About']:
         sg.popup(f'Anime Player v{version}\n\n{loc["About program"]}\n\nCopyright © 2023 MazurDev', title=loc['About'],
                  icon=icon)

@@ -79,7 +79,7 @@ presets = {
 qualities = ('S', 'M', 'L', 'VL', 'UL')
 modes = ('A', 'B', 'C', 'A+A', 'B+B', 'C+A')
 sec_qualities = {'S': 'S', 'M': 'S', 'L': 'M', 'VL': 'M', 'UL': 'L'}
-current_preset = presets['A (HQ)']
+current_preset = ''
 
 
 def create_preset(quality, mode):
@@ -121,8 +121,14 @@ def create_preset(quality, mode):
     return created_presets[mode]
 
 
-def to_string(preset=None):
-    if preset is None:
-        preset = current_preset
+def to_string(preset, preset_name = ''):
     preset = (os.path.dirname(__file__) + os.sep + 'shaders' + os.sep + shader for shader in preset)
+    current_preset_name = preset_name
     return ';'.join(preset)
+
+
+def android_config(preset, path='/storage/emulated/0/mpv/shaders/'):
+    if len(path) != 0 and path[-1] == '/':
+        path = path[0:-1]
+    preset = (path + '/' + shader for shader in preset)
+    return 'glsl-shaders=' + ':'.join(preset)
