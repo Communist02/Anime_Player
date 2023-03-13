@@ -6,7 +6,7 @@ from localization import strings as loc
 
 sg.theme('DarkBlue9')
 icon = f'{os.path.dirname(__file__) + os.sep}favicon.ico'
-formats = ('mp4', 'mp4a', 'mp3', 'mkv', 'flac', 'ogg', 'aac', 'opus', 'wav', 'avi', 'mov', 'webm', 'wmv', '3gp')
+formats = ('mp4', 'mkv', 'webm', 'avi', 'mov', 'wmv', '3gp', 'mp4a', 'mp3', 'flac', 'ogg', 'aac', 'opus', 'wav')
 version = '0.1.6 Alpha'
 
 
@@ -15,7 +15,8 @@ def list_files():
 
 
 def list_filenames():
-    return [f for f in os.listdir(folder) if (f.split('.')[-1].lower() in formats)]
+    filenames = [f for f in os.listdir(folder) if (f.split('.')[-1].lower() in formats)]
+    return [f'{i + 1}) ' + filenames[i] for i in range(len(filenames))]
 
 
 folder = ''
@@ -33,22 +34,21 @@ for quality in anime4k.qualities:
 tabs += [f'{loc["Quality"]} UHQ', [f'{loc["Mode"]} {mode}' for mode in list(anime4k.presets.keys())[9:]]]
 
 menu = [
-    [loc['File'], [loc['Open URL'], loc['Open folder'], loc['Exit']]],
+    [loc['File'], [loc['Open file'], loc['Open URL'], loc['Open folder'], loc['Exit']]],
     [loc['Increasing image quality'], [loc['Disable']] + tabs],
     [loc['Other'], [loc['Reference'], loc['Activate SVP'], loc['Create config for Android'], loc['About']]]
 ]
 
 col_files = [
     [
-        sg.Text(f'{loc["File"]} {filenum + 1} из {len(files)}', size=(15, 1), key='-FILENUM-'),
         sg.Text('', key='-VIDEO_INFO-')
     ],
     [
-        sg.Text('', key='-FPS-'),
         sg.Text(folder, key='-FOLDER-')
     ],
     [
-        sg.Listbox(values=filenames_only, size=(50, 1000), key='-FILELIST-', enable_events=True, horizontal_scroll=True)
+        sg.Listbox(values=filenames_only, size=(50, 1000), key='-FILELIST-', enable_events=True, horizontal_scroll=True,
+                   font='Consolas 10')
     ]
 ]
 
@@ -83,7 +83,7 @@ layout = [
     ]
 ]
 
-window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=True, font='Consolas',
+window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=True, font='Consolas 11',
                    size=(980, 540))
 
 window['-VID_OUT-'].expand(True, True)
@@ -105,12 +105,12 @@ while True:
                                                                                    *divmod(int(player.duration), 60)))
     elif event in '>>' and filenum < len(files) - 1:
         filenum += 1
-        filename = os.path.join(folder, filenames_only[filenum])
+        filename = files[filenum]
         window['-FILELIST-'].update(set_to_index=filenum, scroll_to_index=filenum)
         player.play(filename)
     elif event in '<<' and filenum > 0:
         filenum -= 1
-        filename = os.path.join(folder, filenames_only[filenum])
+        filename = files[filenum]
         window['-FILELIST-'].update(set_to_index=filenum, scroll_to_index=filenum)
         player.play(filename)
     elif event == '-PLAY-':
@@ -155,19 +155,36 @@ while True:
     elif event == loc['Exit']:
         break
     elif event == '-FILELIST-':
-        if len(filenames_only) != 0:
-            filename_temp = os.path.join(folder, values['-FILELIST-'][0])
+        if len(filenames_only) > 1:
+            filename_temp = os.path.join(folder, values['-FILELIST-'][0].split(' ', 1)[-1])
             if filename != filename_temp:
                 filename = filename_temp
                 filenum = files.index(filename)
                 player.play(filename)
     # ----------------- Верхнее меню -----------------
-    if event == loc['Open URL']:
+    if event == loc['Open file']:
+        file = sg.popup_get_file('Выберите файл', no_window=True, icon=icon,
+                                 file_types=(('Все поддерживаемые файлы', ' '.join(['.' + f for f in formats])),))
+        if file != '' and file is not None:
+            file = file.replace('/', os.sep)
+            player.pause = True
+            player.stop()
+            window['-PLAY-'].update('ИГРАТЬ')
+            folder = file.rsplit(os.sep, 1)[0]
+            files = [file]
+            filenames_only = [file.split(os.sep)[-1]]
+            filenum = 0
+            filename = file.rsplit(os.sep, 1)[-1]
+            window['-FILELIST-'].update(values=filenames_only)
+            window['-LIST-'].update(visible=False)
+            player.play(file)
+            window.refresh()
+    elif event == loc['Open URL']:
         link = sg.popup_get_text(
             'Введите URL-адрес', title='Ввод ссылки', icon=icon, font='Consolas', size=(30, 40))
         if link != '' and link is not None:
-            player.stop()
             player.pause = True
+            player.stop()
             window['-PLAY-'].update('ИГРАТЬ')
             folder = 'Ссылка'
             files = [link]
@@ -253,14 +270,11 @@ while True:
 
     # Обновление имени файла
     window['-FOLDER-'].update(folder)
-    # Обновление номера файла
-    window['-FILENUM-'].update(f'{loc["File"]} {filenum + 1} из {len(files)}')
     # Обновление информации о кодеке и потерянных файлах
-    window['-VIDEO_INFO-'].update(f'Кодек: {codec}, Потеряно кадров: {player.frame_drop_count}')
+    window['-VIDEO_INFO-'].update(f'{fps} FPS, {codec}, Потеряно кадров: {player.frame_drop_count}')
     # Обновление кнопки ИГРАТЬ
     if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
         window['-PLAY-'].update('ИГРАТЬ')
-    window['-FPS-'].update(f'FPS: {fps}')
     # Обновление ползунка прокрутки и времени
     if duration is not None and time_pos is not None:
         window['-VIDEO_TIME-'].update(value="{:02d}:{:02d} / {:02d}:{:02d}".format(*divmod(int(time_pos), 60),

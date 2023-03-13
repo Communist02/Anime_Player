@@ -2,6 +2,7 @@ import locale
 
 en = {
     'File': 'File',
+    'Open file': 'Open file',
     'Open URL': 'Open URL',
     'Open folder': 'Open folder',
     'Exit': 'Exit',
@@ -19,6 +20,7 @@ en = {
 
 ru = {
     'File': 'Файл',
+    'Open file': 'Открыть файл',
     'Open URL': 'Открыть URL-адрес',
     'Open folder': 'Открыть папку',
     'Exit': 'Выход',
