@@ -89,8 +89,8 @@ window = sg.Window('Anime Player', layout, icon=icon, resizable=True, finalize=T
 window['-VID_OUT-'].expand(True, True)
 
 player: mpv.MPV = mpv.MPV(wid=window['-VID_OUT-'].Widget.winfo_id(), input_default_bindings=True,
-                          input_vo_keyboard=True, osc=True, scale='ewa_lanczossharp', cscale='ewa_lanczossharp',
-                          dscale='ewa_lanczossharp', keep_open=True)
+                          input_vo_keyboard=True, osc=True, profile='gpu-hq', scale='ewa_lanczossharp',
+                          cscale='ewa_lanczossharp', dscale='ewa_lanczossharp', keep_open=True)
 
 while True:
     event, values = window.read(timeout=500)
@@ -271,7 +271,8 @@ while True:
     # Обновление имени файла
     window['-FOLDER-'].update(folder)
     # Обновление информации о кодеке и потерянных файлах
-    window['-VIDEO_INFO-'].update(f'{fps} FPS, {codec}, Потеряно кадров: {player.frame_drop_count}')
+    window['-VIDEO_INFO-'].update(
+        f'{player.width}x{player.height}|{fps} FPS|{codec}|Потеряно кадров: {player.frame_drop_count}')
     # Обновление кнопки ИГРАТЬ
     if duration is not None and player.pause and window['-PLAY-'] != 'ИГРАТЬ':
         window['-PLAY-'].update('ИГРАТЬ')
